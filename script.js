@@ -6,9 +6,6 @@ const session = new Session("pastagang5", {
   isSecure: true,
 });
 
-session.on("change", (...args) => {
-  // console.log("change", ...args);
-});
 session.on("eval:hydra", (msg) => {
   // console.log("eval:hydra", msg);
 });
@@ -16,64 +13,101 @@ session.on("eval:strudel", (msg) => {
   // console.log("eval:strudel", msg);
 });
 
-session.on("sync", () => {
-  const flokDocuments = session.getDocuments();
-  for (const flokDocument of flokDocuments) {
-    const editorElement = createEditorElement(flokDocument);
-    session._yText(flokDocument.id).observe((textEvent) => {
-      const changes = textEvent.changes;
+session.on("sync", () => {});
 
-      // Figure out what the changes do
-      let retainCount = 0;
-      let insertCount = 0;
-      let deleteCount = 0;
-      for (const operation of changes.delta) {
-        if (operation.retain) {
-          if (retainCount) throw new Error("Unexpected double retain");
-          retainCount += operation.retain;
-        }
-        if (operation.insert) {
-          if (insertCount) throw new Error("Unexpected double insert");
-          insertCount += operation.insert.length;
-        }
-        if (operation.delete) {
-          if (deleteCount) throw new Error("Unexpected double delete");
-          deleteCount += operation.delete;
-        }
-      }
-
-      // Figure out where the new selection should go
-      let selectionStart = editorElement.selectionStart;
-      let selectionEnd = editorElement.selectionEnd;
-      if (selectionStart > retainCount) {
-        selectionStart = Math.max(selectionStart - deleteCount, retainCount);
-        selectionStart += insertCount;
-      }
-      if (selectionEnd > retainCount) {
-        selectionEnd = Math.max(selectionEnd - deleteCount, retainCount);
-        selectionEnd += insertCount;
-      }
-
-      // Update the editor
-      editorElement.value = flokDocument.getText();
-      editorElement.setSelectionRange(selectionStart, selectionEnd);
-    });
-  }
+session.on("change", (flokDocs) => {
+  updateDenteEditors(flokDocs);
 });
 
-function createEditorElement(doc) {
-  const main = document.querySelector("main");
-  if (!main) throw new Error("Main element not found");
+const currentDenteEditors = new Map();
+function updateDenteEditors(flokDocs) {
+  for (const [flokDocId] of currentDenteEditors) {
+    if (flokDocs.find((v) => v.id === flokDocId)) continue;
+    deleteDenteEditor(flokDocId);
+  }
 
+  for (const flokDoc of flokDocs) {
+    if (currentDenteEditors.has(flokDoc.id)) continue;
+    createDenteEditor(flokDoc);
+  }
+}
+
+function deleteDenteEditor(editorId) {
+  const editor = currentDenteEditors.get(editorId);
+  if (!editor) throw new Error("Editor not found");
+
+  session._yText(editorId).unobserve(editor.observer);
+
+  editor.element.remove();
+  currentDenteEditors.delete(editorId);
+}
+
+function createDenteEditor(flokDoc) {
+  const currentEditor = currentDenteEditors.get(flokDoc.id);
+  if (currentEditor) throw new Error("Editor already exists");
+
+  //===== Element =====
   const editorElement = document.createElement("textarea");
-  editorElement.id = `editor-${doc.id}`;
+  editorElement.id = `editor-${flokDoc.id}`;
   editorElement.className = "editor";
   editorElement.style.whiteSpace = "pre";
-  editorElement.value = doc.getText();
+  editorElement.value = flokDoc.getText();
   editorElement.style.resize = "none";
 
+  const main = document.querySelector("main");
+  if (!main) throw new Error("Main element not found");
   main.append(editorElement);
-  return editorElement;
+
+  //===== Observer =====
+  function observer(textEvent) {
+    const changes = textEvent.changes;
+
+    // Figure out what the changes do
+    let retainCount = 0;
+    let insertCount = 0;
+    let deleteCount = 0;
+    for (const operation of changes.delta) {
+      if (operation.retain) {
+        if (retainCount) throw new Error("Unexpected double retain");
+        retainCount += operation.retain;
+      }
+      if (operation.insert) {
+        if (insertCount) throw new Error("Unexpected double insert");
+        insertCount += operation.insert.length;
+      }
+      if (operation.delete) {
+        if (deleteCount) throw new Error("Unexpected double delete");
+        deleteCount += operation.delete;
+      }
+    }
+
+    // Figure out where the new selection should go
+    let selectionStart = editorElement.selectionStart;
+    let selectionEnd = editorElement.selectionEnd;
+    if (selectionStart > retainCount) {
+      selectionStart = Math.max(selectionStart - deleteCount, retainCount);
+      selectionStart += insertCount;
+    }
+    if (selectionEnd > retainCount) {
+      selectionEnd = Math.max(selectionEnd - deleteCount, retainCount);
+      selectionEnd += insertCount;
+    }
+
+    // Update the editor
+    editorElement.value = flokDoc.getText();
+    editorElement.setSelectionRange(selectionStart, selectionEnd);
+  }
+
+  session._yText(flokDoc.id).observe(observer);
+
+  const denteEditor = {
+    element: editorElement,
+    observer,
+    flokDoc,
+  };
+
+  currentDenteEditors.set(flokDoc.id, denteEditor);
+  return denteEditor;
 }
 
 session.initialize();
