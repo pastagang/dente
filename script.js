@@ -62,6 +62,19 @@ function createDenteEditor(flokDoc) {
     session.setTextString(flokDoc.id, element.value);
   });
 
+  element.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Enter" &&
+      (event.ctrlKey || event.metaKey || event.altKey)
+    ) {
+      event.preventDefault();
+      element.classList.remove("flash-editor");
+      requestAnimationFrame(() => {
+        element.classList.add("flash-editor");
+      });
+    }
+  });
+
   //===== Observer =====
   function observer(textEvent, transaction) {
     // Ignore local changes
