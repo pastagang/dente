@@ -72,7 +72,16 @@ function createDenteEditor(flokDoc) {
       (event.ctrlKey || event.metaKey || event.altKey)
     ) {
       event.preventDefault();
-      flashEditor(flokDoc.id);
+      session.evaluate(
+        flokDoc.id,
+        flokDoc.target,
+        element.value,
+        {
+          from: 0,
+          to: element.value.length,
+        },
+        "web"
+      );
     }
   });
 
