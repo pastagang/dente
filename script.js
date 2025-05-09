@@ -46,9 +46,12 @@ function deleteDenteEditor(editorId) {
   currentDenteEditors.delete(editorId);
 }
 
+let pastingMode = localStorage.getItem("pastingMode") === "true";
 function createDenteEditor(flokDoc) {
   const currentEditor = currentDenteEditors.get(flokDoc.id);
   if (currentEditor) throw new Error("Editor already exists");
+
+  const yText = session._yText(flokDoc.id);
 
   //===== Element =====
   const element = document.createElement("textarea");
@@ -62,9 +65,96 @@ function createDenteEditor(flokDoc) {
   if (!main) throw new Error("Main element not found");
   main.append(element);
 
-  element.addEventListener("input", () => {
-    session.setTextString(flokDoc.id, element.value);
-  });
+  element.addEventListener(
+    "beforeinput",
+    (_e) => {
+      /** @type {InputEvent} */
+      // @ts-ignore
+      const e = _e;
+
+      const start = Math.min(element.selectionStart, element.selectionEnd);
+      const end = Math.max(element.selectionStart, element.selectionEnd);
+      const length = end - start;
+
+      // console.log(e.inputType, start, end, length);
+
+      switch (e.inputType) {
+        case "insertText": {
+          if (!pastingMode) {
+            yText.delete(start, length);
+            yText.insert(start, e.data);
+          } else {
+            e.preventDefault();
+            const answer = confirm(
+              "Typing is disabled. Do you want to enable typing?"
+            );
+            if (answer) {
+              pastingMode = false;
+              localStorage.setItem("pastingMode", "false");
+            }
+          }
+          break;
+        }
+        case "deleteContentBackward": {
+          if (length) {
+            yText.delete(start, length);
+          } else {
+            yText.delete(start - 1, 1);
+          }
+          break;
+        }
+        case "deleteContentForward": {
+          if (length) {
+            yText.delete(start, length);
+          } else {
+            yText.delete(start, 1);
+          }
+          break;
+        }
+        case "deleteByCut": {
+          yText.delete(start, length);
+          break;
+        }
+        case "insertFromPaste": {
+          if (!pastingMode) {
+            e.preventDefault();
+            const answer = confirm(
+              "Pasting is disabled. Do you want to enable pasting?"
+            );
+            if (answer) {
+              pastingMode = true;
+              localStorage.setItem("pastingMode", "true");
+            }
+          } else {
+            yText.delete(start, length);
+            yText.insert(start, e.data);
+          }
+          break;
+        }
+        case "insertLineBreak": {
+          yText.delete(start, length);
+          yText.insert(start, "\n");
+          break;
+        }
+        case "insertByDrop":
+        case "deleteByDrag": {
+          console.error("Disabled input type: " + e.inputType);
+          e.preventDefault();
+          break;
+        }
+        default: {
+          e.preventDefault();
+          alert(
+            "Unrecognized input type: " +
+              e.inputType +
+              "\n Please tell #pastagang you saw this message!"
+          );
+          throw new Error("Unimplemented input type: " + e.inputType);
+        }
+      }
+    },
+    { passive: false }
+  );
 
   element.addEventListener("keydown", (event) => {
     if (
@@ -111,8 +201,10 @@ function createDenteEditor(flokDoc) {
     }
 
     // Figure out where the new selection should go
-    let selectionStart = element.selectionStart;
-    let selectionEnd = element.selectionEnd;
+    let selectionStart = Math.min(element.selectionStart, element.selectionEnd);
+    let selectionEnd = Math.max(element.selectionStart, element.selectionEnd);
+    const backwards = selectionStart > selectionEnd;
+
     if (selectionStart > retainCount) {
       selectionStart = Math.max(selectionStart - deleteCount, retainCount);
       selectionStart += insertCount;
@@ -124,7 +216,11 @@ function createDenteEditor(flokDoc) {
 
     // Update the editor
     element.value = flokDoc.getText();
-    element.setSelectionRange(selectionStart, selectionEnd);
+    if (backwards) {
+      element.setSelectionRange(selectionEnd, selectionStart);
+    } else {
+      element.setSelectionRange(selectionStart, selectionEnd);
+    }
   }
 
   session._yText(flokDoc.id).observe(observer);
