@@ -1,8 +1,36 @@
 <!DOCTYPE html>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="/style.css" />
 <title>🪨 dente</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    height: 100%;
+    width: 100%;
+  }
+
+  body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(300px, 1fr));
+    grid-auto-flow: dense;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+
+    gap: 10px;
+    height: 100%;
+    padding: 10px;
+  }
+</style>
 <script type="module" src="/main.js"></script>
 
 <main></main>
