@@ -1,57 +1,11 @@
 <!DOCTYPE html>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/style.css" />
 <title>🪨 dente</title>
-<style>
-  * {
-    box-sizing: border-box;
-    overscroll-behavior: none;
-  }
 
-  html {
-    height: 100%;
-  }
-
-  body {
-    height: 100%;
-    margin: 0px;
-    padding: 8px;
-  }
-
-  main {
-    height: 100%;
-    display: grid;
-    gap: 8px;
-    grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
-  }
-
-  main > textarea {
-    max-width: 100%;
-  }
-
-  textarea {
-    background-color: white;
-    color: black;
-  }
-
-  .flash-editor {
-    background-color: white;
-    color: black;
-    animation: flash 0.5s ease-out;
-    /* animation-iteration-count: infinite; */
-  }
-
-  @keyframes flash {
-    0% {
-      background-color: black;
-      color: white;
-    }
-    100% {
-      background-color: white;
-      color: black;
-    }
-  }
-</style>
 <script type="module" src="/script.js"></script>
+
+<iframe src="/strudel" style="display: none"></iframe>
 
 <main></main>
