@@ -63,10 +63,12 @@ function createDenteEditor(flokDoc) {
   });
 
   //===== Observer =====
-  function observer(textEvent) {
-    const changes = textEvent.changes;
+  function observer(textEvent, transaction) {
+    // Ignore local changes
+    if (!transaction.origin) return;
 
     // Figure out what the changes do
+    const changes = textEvent.changes;
     let retainCount = 0;
     let insertCount = 0;
     let deleteCount = 0;
