@@ -35,6 +35,7 @@ function createEditorElement(doc) {
   editorElement.className = "editor";
   editorElement.style.whiteSpace = "pre";
   editorElement.value = doc.getText();
+  editorElement.style.resize = "none";
 
   main.append(editorElement);
 }

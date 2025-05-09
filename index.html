@@ -5,26 +5,24 @@
 <style>
   * {
     box-sizing: border-box;
+    overscroll-behavior: none;
   }
 
-  @media (min-width: 600px) {
-    html {
-      height: 100%;
-    }
+  html {
+    height: 100%;
+  }
 
-    body {
-      height: 100%;
-      margin: 0px;
-      padding: 8px;
-    }
+  body {
+    height: 100%;
+    margin: 0px;
+    padding: 8px;
+  }
 
-    main {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      grid-template-rows: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 8px;
-      height: 100%;
-    }
+  main {
+    height: 100%;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   }
 </style>
 <script type="module" src="/script.js"></script>
