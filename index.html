@@ -22,7 +22,11 @@
     height: 100%;
     display: grid;
     gap: 8px;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
+  }
+
+  main > textarea {
+    max-width: 100%;
   }
 </style>
 <script type="module" src="/script.js"></script>

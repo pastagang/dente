@@ -19,9 +19,9 @@ session.on("eval:strudel", (msg) => {
 session.on("sync", () => {
   const flokDocuments = session.getDocuments();
   for (const flokDocument of flokDocuments) {
-    createEditorElement(flokDocument);
+    const editorElement = createEditorElement(flokDocument);
     session._yText(flokDocument.id).observe((textEvent) => {
-      console.log(textEvent.changes);
+      editorElement.value = flokDocument.getText();
     });
   }
 });
@@ -38,6 +38,7 @@ function createEditorElement(doc) {
   editorElement.style.resize = "none";
 
   main.append(editorElement);
+  return editorElement;
 }
 
 session.initialize();
