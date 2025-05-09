@@ -7,7 +7,7 @@ import { Session } from "@flok-editor/session";
 import { flashField, evalKeymap, remoteEvalFlash } from "@flok-editor/cm-eval";
 import { UndoManager } from "yjs";
 
-const flokBasicSetup = (doc) => {
+function flokBasicSetup(doc) {
   const text = doc.getText();
   const undoManager = new UndoManager(text);
   // if target is hydra, use "web" mode to evaluate on browser only, not REPLs
@@ -19,9 +19,9 @@ const flokBasicSetup = (doc) => {
     Prec.high(evalKeymap(doc, { web })),
     yCollab(text, doc.session.awareness, { undoManager }),
   ];
-};
+}
 
-const createEditor = (doc) => {
+function createEditor(doc) {
   const state = EditorState.create({
     doc: doc.content,
     extensions: [
@@ -50,16 +50,16 @@ const createEditor = (doc) => {
   });
 
   return [state, view];
-};
+}
 
-const handleMessage = (msg) => {
+function handleMessage(msg) {
   console.log("message", msg);
-};
+}
 
-const handleEvalHydra = (msg) => {
+function handleEvalHydra(msg) {
   console.log("eval:hydra", msg);
   // evaluate hydra code here...
-};
+}
 
 const session = new Session("default", { port: 3000 });
 window.session = session;
