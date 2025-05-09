@@ -33,10 +33,10 @@ function createEditorElement(doc) {
   const editorElement = document.createElement("textarea");
   editorElement.id = `editor-${doc.id}`;
   editorElement.className = "editor";
+  editorElement.style.whiteSpace = "pre";
+  editorElement.value = doc.getText();
 
   main.append(editorElement);
-
-  return editorElement;
 }
 
 session.initialize();
