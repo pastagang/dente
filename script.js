@@ -95,6 +95,11 @@ function createDenteEditor(flokDoc) {
           }
           break;
         }
+        case "deleteContent": {
+          yText.delete(start, length);
+          break;
+        }
+        case "deleteWordBackward":
         case "deleteContentBackward": {
           if (length) {
             yText.delete(start, length);
@@ -103,6 +108,7 @@ function createDenteEditor(flokDoc) {
           }
           break;
         }
+        case "deleteWordForward":
         case "deleteContentForward": {
           if (length) {
             yText.delete(start, length);
@@ -131,11 +137,19 @@ function createDenteEditor(flokDoc) {
           }
           break;
         }
-        case "insertLineBreak": {
+        case "insertLineBreak":
+        case "insertParagraph": {
           yText.delete(start, length);
           yText.insert(start, "\n");
           break;
         }
+        case "historyUndo":
+        case "historyRedo": {
+          e.preventDefault();
+          alert("Undo is disabled.");
+          break;
+        }
+
         case "insertByDrop":
         case "deleteByDrag": {
           console.error("Disabled input type: " + e.inputType);
