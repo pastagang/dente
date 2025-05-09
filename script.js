@@ -6,6 +6,10 @@ const session = new Session("pastagang5", {
   isSecure: true,
 });
 
+session.on("eval", (msg) => {
+  flashEditor(msg.docId);
+});
+
 session.on("eval:hydra", (msg) => {
   // console.log("eval:hydra", msg);
 });
@@ -68,10 +72,7 @@ function createDenteEditor(flokDoc) {
       (event.ctrlKey || event.metaKey || event.altKey)
     ) {
       event.preventDefault();
-      element.classList.remove("flash-editor");
-      requestAnimationFrame(() => {
-        element.classList.add("flash-editor");
-      });
+      flashEditor(flokDoc.id);
     }
   });
 
@@ -127,6 +128,16 @@ function createDenteEditor(flokDoc) {
 
   currentDenteEditors.set(flokDoc.id, denteEditor);
   return denteEditor;
+}
+
+function flashEditor(editorId) {
+  const editor = currentDenteEditors.get(editorId);
+  if (!editor) throw new Error("Editor not found");
+  const element = editor.element;
+  element.classList.remove("flash-editor");
+  requestAnimationFrame(() => {
+    element.classList.add("flash-editor");
+  });
 }
 
 session.initialize();
