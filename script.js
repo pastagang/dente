@@ -47,16 +47,20 @@ function createDenteEditor(flokDoc) {
   if (currentEditor) throw new Error("Editor already exists");
 
   //===== Element =====
-  const editorElement = document.createElement("textarea");
-  editorElement.id = `editor-${flokDoc.id}`;
-  editorElement.className = "editor";
-  editorElement.style.whiteSpace = "pre";
-  editorElement.value = flokDoc.getText();
-  editorElement.style.resize = "none";
+  const element = document.createElement("textarea");
+  element.id = `editor-${flokDoc.id}`;
+  element.className = "editor";
+  element.style.whiteSpace = "pre";
+  element.value = flokDoc.getText();
+  element.style.resize = "none";
 
   const main = document.querySelector("main");
   if (!main) throw new Error("Main element not found");
-  main.append(editorElement);
+  main.append(element);
+
+  element.addEventListener("input", () => {
+    session.setTextString(flokDoc.id, element.value);
+  });
 
   //===== Observer =====
   function observer(textEvent) {
@@ -82,8 +86,8 @@ function createDenteEditor(flokDoc) {
     }
 
     // Figure out where the new selection should go
-    let selectionStart = editorElement.selectionStart;
-    let selectionEnd = editorElement.selectionEnd;
+    let selectionStart = element.selectionStart;
+    let selectionEnd = element.selectionEnd;
     if (selectionStart > retainCount) {
       selectionStart = Math.max(selectionStart - deleteCount, retainCount);
       selectionStart += insertCount;
@@ -94,14 +98,14 @@ function createDenteEditor(flokDoc) {
     }
 
     // Update the editor
-    editorElement.value = flokDoc.getText();
-    editorElement.setSelectionRange(selectionStart, selectionEnd);
+    element.value = flokDoc.getText();
+    element.setSelectionRange(selectionStart, selectionEnd);
   }
 
   session._yText(flokDoc.id).observe(observer);
 
   const denteEditor = {
-    element: editorElement,
+    element,
     observer,
     flokDoc,
   };
