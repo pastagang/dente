@@ -165,7 +165,7 @@ export class StrudelSession {
   }
 
   async setDocPattern(docId, pattern) {
-    this.patterns[docId] = pattern.docId(docId); // docId is needed for highlighting
+    // this.patterns[docId] = pattern.docId(docId); // docId is needed for highlighting
     //console.log("this.patterns", this.patterns);
     // this is cps with phase jump on purpose
     // to preserve sync

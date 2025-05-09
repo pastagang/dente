@@ -13,8 +13,12 @@ session.on("eval", (msg) => {
 session.on("eval:hydra", (msg) => {
   // console.log("eval:hydra", msg);
 });
+
+/** @type {HTMLIFrameElement | null} */
+const strudelIframe = document.querySelector("#strudel");
 session.on("eval:strudel", (msg) => {
-  // console.log("eval:strudel", msg);
+  if (!strudelIframe) throw new Error("Strudel iframe not found");
+  strudelIframe?.contentWindow?.postMessage({ type: "eval", msg });
 });
 
 session.on("sync", () => {});
