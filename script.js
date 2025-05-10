@@ -27,32 +27,32 @@ session.on("change", (flokDocs) => {
   updateDenteEditors(flokDocs);
 });
 
-const currentDenteEditors = new Map();
+const currentEditors = new Map();
 function updateDenteEditors(flokDocs) {
-  for (const [flokDocId] of currentDenteEditors) {
+  for (const [flokDocId] of currentEditors) {
     if (flokDocs.find((v) => v.id === flokDocId)) continue;
     deleteDenteEditor(flokDocId);
   }
 
   for (const flokDoc of flokDocs) {
-    if (currentDenteEditors.has(flokDoc.id)) continue;
-    createDenteEditor(flokDoc);
+    if (currentEditors.has(flokDoc.id)) continue;
+    createEditor(flokDoc);
   }
 }
 
 function deleteDenteEditor(editorId) {
-  const editor = currentDenteEditors.get(editorId);
+  const editor = currentEditors.get(editorId);
   if (!editor) throw new Error("Editor not found");
 
   session._yText(editorId).unobserve(editor.observer);
 
   editor.element.remove();
-  currentDenteEditors.delete(editorId);
+  currentEditors.delete(editorId);
 }
 
 let pastingMode = localStorage.getItem("pastingMode") === "true";
-function createDenteEditor(flokDoc) {
-  const currentEditor = currentDenteEditors.get(flokDoc.id);
+function createEditor(flokDoc) {
+  const currentEditor = currentEditors.get(flokDoc.id);
   if (currentEditor) throw new Error("Editor already exists");
 
   const yText = session._yText(flokDoc.id);
@@ -243,18 +243,18 @@ function createDenteEditor(flokDoc) {
 
   session._yText(flokDoc.id).observe(observer);
 
-  const denteEditor = {
+  const editor = {
     element,
     observer,
     flokDoc,
   };
 
-  currentDenteEditors.set(flokDoc.id, denteEditor);
-  return denteEditor;
+  currentEditors.set(flokDoc.id, editor);
+  return editor;
 }
 
 function flashEditor(editorId) {
-  const editor = currentDenteEditors.get(editorId);
+  const editor = currentEditors.get(editorId);
   if (!editor) throw new Error("Editor not found");
   const element = editor.element;
   element.classList.remove("flash-editor");
