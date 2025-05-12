@@ -27,15 +27,12 @@ main > textarea {
 textarea {
   background-color: white;
   color: black;
-  outline: none;
-  border: 1px solid black;
 }
 
 .flash-editor {
   background-color: white;
   color: black;
   animation: flash 0.5s ease-out;
-  /* animation-iteration-count: infinite; */
 }
 
 @keyframes flash {
