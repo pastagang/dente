@@ -30,11 +30,12 @@ section {
 }
 
 textarea {
+  background-color: transparent;
   height: 100%;
 }
 
 .flash-editor {
-  background-color: white;
+  background-color: transparent;
   color: black;
   animation: flash 0.5s ease-out;
 }
@@ -45,7 +46,7 @@ textarea {
     color: white;
   }
   100% {
-    background-color: white;
+    background-color: transparent;
     color: black;
   }
 }
