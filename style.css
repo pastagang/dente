@@ -20,15 +20,23 @@ main {
   grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
 }
 
-main > textarea {
-  max-width: 100%;
-}
-
-textarea {
-  background-color: white;
-  color: black;
-  outline: none;
-  border: 1px solid black;
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  .target-text {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+  }
+  textarea {
+    max-width: 100%;
+    background-color: white;
+    color: black;
+    outline: none;
+    border: 1px solid black;
+    height: 100%;
+  }
 }
 
 .flash-editor {
