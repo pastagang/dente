@@ -59,11 +59,11 @@ function createEditor(flokDoc) {
 
   //===== Element =====
   // is this hard enough?
-  const container = document.createElement("div");
-  container.className = "editor-container";
-  const targetText = document.createElement("span");
-  targetText.className = "target-text";
-  targetText.innerHTML = flokDoc.target;
+  const container = document.createElement("section");
+  const targetText = document.createElement("label");
+  targetText.setAttribute("for", `editor-${flokDoc.id}`);
+  targetText.className = "target";
+  targetText.textContent = flokDoc.target;
   container.append(targetText);
   const element = document.createElement("textarea");
   element.id = `editor-${flokDoc.id}`;
