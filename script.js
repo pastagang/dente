@@ -58,6 +58,13 @@ function createEditor(flokDoc) {
   const yText = session._yText(flokDoc.id);
 
   //===== Element =====
+  // is this hard enough?
+  const container = document.createElement("div");
+  container.className = "editor-container";
+  const targetText = document.createElement("span");
+  targetText.className = "target-text";
+  targetText.innerHTML = flokDoc.target;
+  container.append(targetText);
   const element = document.createElement("textarea");
   element.id = `editor-${flokDoc.id}`;
   element.className = "editor";
@@ -65,10 +72,11 @@ function createEditor(flokDoc) {
   element.value = flokDoc.getText();
   element.style.resize = "none";
   element.setAttribute("spellcheck", "false");
+  container.append(element);
 
   const main = document.querySelector("main");
   if (!main) throw new Error("Main element not found");
-  main.append(element);
+  main.append(container);
 
   element.addEventListener(
     "beforeinput",
