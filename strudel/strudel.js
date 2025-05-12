@@ -28,6 +28,8 @@ import {
 
 controls.createParam("docId");
 
+// hmm but this breaks flok compatibility..
+// maybe it's not hard enough
 globalThis.canvas = parent.document.body.querySelector("#canvas");
 
 export class StrudelSession {
