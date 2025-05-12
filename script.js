@@ -9,6 +9,7 @@ const session = new Session("pastagang5", {
 session.on("eval", (msg) => {
   flashEditor(msg.docId);
 });
+session.on("eval:js", (msg) => new Function(msg.body)());
 
 session.on("eval:hydra", (msg) => {
   // console.log("eval:hydra", msg);
