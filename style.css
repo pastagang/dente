@@ -15,13 +15,6 @@ body {
   padding: 4px;
 }
 
-#canvas {
-  height: 100%;
-  width: 100%;
-  z-index: -1;
-  pointer-events: none;
-}
-
 main {
   height: 100%;
   display: grid;
