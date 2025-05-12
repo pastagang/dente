@@ -58,6 +58,7 @@ function createEditor(flokDoc) {
   const yText = session._yText(flokDoc.id);
 
   //===== Element =====
+  // is this hard enough?
   const container = document.createElement("div");
   container.className = "editor-container";
   const targetText = document.createElement("span");
