@@ -1,6 +1,6 @@
 * {
   box-sizing: border-box;
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
 }
 
 html {
@@ -43,7 +43,6 @@ main {
   background-color: white;
   color: black;
   animation: flash 0.5s ease-out;
-  /* animation-iteration-count: infinite; */
 }
 
 @keyframes flash {
