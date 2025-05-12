@@ -28,6 +28,8 @@ import {
 
 controls.createParam("docId");
 
+globalThis.canvas = parent.document.body.querySelector("#canvas");
+
 export class StrudelSession {
   cps = 0.5;
   constructor() {
