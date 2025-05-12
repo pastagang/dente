@@ -12,7 +12,7 @@ html {
 body {
   height: 100%;
   margin: 0px;
-  padding: 8px;
+  padding: 4px;
 }
 
 #canvas {
@@ -25,27 +25,19 @@ body {
 main {
   height: 100%;
   display: grid;
-  gap: 8px;
+  gap: 4px;
   grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
 }
 
-.editor-container {
+section {
   display: flex;
   flex-direction: column;
-  position: relative;
-  .target-text {
-    position: absolute;
-    right: 2px;
-    top: 2px;
-  }
-  textarea {
-    max-width: 100%;
-    background-color: white;
-    color: black;
-    outline: none;
-    border: 1px solid black;
-    height: 100%;
-  }
+  justify-content: stretch;
+  gap: 4px;
+}
+
+textarea {
+  height: 100%;
 }
 
 .flash-editor {
