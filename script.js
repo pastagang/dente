@@ -1,38 +1,68 @@
 // @ts-ignore
 import { Session } from "https://esm.sh/@flok-editor/session@1.3.0";
 
+//============//
+// SETUP FLOK //
+//============//
 const session = new Session("pastagang5", {
   hostname: "flok.cc",
   isSecure: true,
 });
 
-session.on("eval", (msg) => {
-  flashEditor(msg.docId);
-});
+session.on("eval", (msg) => flashEditor(msg.docId));
+session.on("change", (flokDocs) => updateEditors(flokDocs));
 session.on("eval:js", (msg) => new Function(msg.body)());
 
+//=============//
+// SETUP HYDRA //
+//=============//
 session.on("eval:hydra", (msg) => {
+  // TODO
   // console.log("eval:hydra", msg);
 });
 
+//===============//
+// SETUP STRUDEL //
+//===============//
 /** @type {HTMLIFrameElement | null} */
 const strudelIframe = document.querySelector("#strudel");
+if (!strudelIframe) throw new Error("Strudel iframe not found");
+
 session.on("eval:strudel", (msg) => {
-  if (!strudelIframe) throw new Error("Strudel iframe not found");
-  strudelIframe?.contentWindow?.postMessage({ type: "eval", msg });
+  strudelIframe.contentWindow?.postMessage({ type: "eval", msg });
 });
 
-session.on("sync", () => {});
+//==========//
+// SETTINGS //
+//==========//
+let pastingMode = localStorage.getItem("pastingMode") === "true";
 
-session.on("change", (flokDocs) => {
-  updateDenteEditors(flokDocs);
-});
-
+//=========//
+// EDITORS //
+//=========//
 const currentEditors = new Map();
-function updateDenteEditors(flokDocs) {
+
+/**
+ * Flash an editor to indicate an evaluation.
+ */
+function flashEditor(editorId) {
+  const editor = currentEditors.get(editorId);
+  if (!editor) throw new Error("Editor not found");
+  const element = editor.element;
+  element.classList.remove("flash");
+  requestAnimationFrame(() => {
+    element.classList.add("flash");
+  });
+}
+
+/**
+ * Update the editors on the page to match the current flok panels
+ * (deleting if necessary) (creating if necessary)
+ */
+function updateEditors(flokDocs) {
   for (const [flokDocId] of currentEditors) {
     if (flokDocs.find((v) => v.id === flokDocId)) continue;
-    deleteDenteEditor(flokDocId);
+    deleteEditor(flokDocId);
   }
 
   for (const flokDoc of flokDocs) {
@@ -41,17 +71,21 @@ function updateDenteEditors(flokDocs) {
   }
 }
 
-function deleteDenteEditor(editorId) {
+/**
+ * Delete and clean up an editor.
+ */
+function deleteEditor(editorId) {
   const editor = currentEditors.get(editorId);
   if (!editor) throw new Error("Editor not found");
 
   session._yText(editorId).unobserve(editor.observer);
-
   editor.element.remove();
   currentEditors.delete(editorId);
 }
 
-let pastingMode = localStorage.getItem("pastingMode") === "true";
+/**
+ * Create an editor, along with everything else it needs.
+ */
 function createEditor(flokDoc) {
   const currentEditor = currentEditors.get(flokDoc.id);
   if (currentEditor) throw new Error("Editor already exists");
@@ -59,11 +93,9 @@ function createEditor(flokDoc) {
   const yText = session._yText(flokDoc.id);
 
   //===== Element =====
-  // is this hard enough?
   const container = document.createElement("section");
   const targetText = document.createElement("label");
   targetText.setAttribute("for", `editor-${flokDoc.id}`);
-  targetText.className = "target";
   targetText.textContent = flokDoc.target;
   container.append(targetText);
   const element = document.createElement("textarea");
@@ -263,15 +295,4 @@ function createEditor(flokDoc) {
   return editor;
 }
 
-function flashEditor(editorId) {
-  const editor = currentEditors.get(editorId);
-  if (!editor) throw new Error("Editor not found");
-  const element = editor.element;
-  element.classList.remove("flash-editor");
-  requestAnimationFrame(() => {
-    element.classList.add("flash-editor");
-  });
-}
-
 session.initialize();
-window["session"] = session;

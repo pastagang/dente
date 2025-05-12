@@ -34,7 +34,7 @@ textarea {
   height: 100%;
 }
 
-.flash-editor {
+.flash {
   background-color: transparent;
   color: black;
   animation: flash 0.5s ease-out;
