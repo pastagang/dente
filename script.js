@@ -64,6 +64,7 @@ function createEditor(flokDoc) {
   element.style.whiteSpace = "pre";
   element.value = flokDoc.getText();
   element.style.resize = "none";
+  element.setAttribute("spellcheck", "false");
 
   const main = document.querySelector("main");
   if (!main) throw new Error("Main element not found");

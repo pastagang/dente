@@ -27,6 +27,8 @@ main > textarea {
 textarea {
   background-color: white;
   color: black;
+  outline: none;
+  border: 1px solid black;
 }
 
 .flash-editor {
