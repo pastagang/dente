@@ -1,3 +1,5 @@
+/* if you edit this file, you might need to bump up the version number in index.html to make sure it refreshes in people's browsers */
+
 * {
   box-sizing: border-box;
   overscroll-behavior: none;
