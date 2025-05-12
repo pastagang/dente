@@ -78,7 +78,7 @@ export class StrudelSession {
     // @ts-ignore
     this.tonal = import("https://esm.sh/@strudel/tonal@1.2.0");
     // @ts-ignore
-    this.soundfonts = import("https://esm.sh/@strudel/soundfonts@1.2.1");
+    // this.soundfonts = import("https://esm.sh/@strudel/soundfonts@1.2.1");
 
     await evalScope(
       this.core,
@@ -86,7 +86,7 @@ export class StrudelSession {
       this.webaudio,
       this.draw,
       this.tonal,
-      this.soundfonts,
+      // this.soundfonts,
       this.midi,
       controls
     );
