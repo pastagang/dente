@@ -1,6 +1,6 @@
 * {
   box-sizing: border-box;
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
 }
 
 html {
