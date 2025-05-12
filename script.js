@@ -11,6 +11,7 @@ const session = new Session("pastagang5", {
 
 session.on("eval", (msg) => flashEditor(msg.docId));
 session.on("change", (flokDocs) => updateEditors(flokDocs));
+session.on("eval:js", (msg) => new Function(msg.body)());
 
 //=============//
 // SETUP HYDRA //
