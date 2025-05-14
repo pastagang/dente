@@ -125,7 +125,8 @@ function createEditor(flokDoc) {
       // console.log(e.inputType, start, end, length);
 
       switch (e.inputType) {
-        case "insertText": {
+        case "insertText":
+        case "insertCompositionText": {
           if (!pastingMode) {
             yText.delete(start, length);
             yText.insert(start, e.data);
@@ -198,7 +199,7 @@ function createEditor(flokDoc) {
 
         case "insertByDrop":
         case "deleteByDrag": {
-          console.error("Disabled input type: " + e.inputType);
+          console.error("Dragging and dropping is disabled.");
           e.preventDefault();
           break;
         }
