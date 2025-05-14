@@ -32,6 +32,18 @@ session.on("eval:strudel", (msg) => {
   strudelIframe.contentWindow?.postMessage({ type: "eval", msg });
 });
 
+window.addEventListener("message", (event) => {
+  if (event.data.type === "error") {
+    const docId = event.data.docId;
+    const editor = currentEditors.get(docId);
+    if (!editor) throw new Error("Editor not found");
+    const element = editor.element;
+    console.log(element);
+    element.setCustomValidity(event.data.msg);
+    element.reportValidity();
+  }
+});
+
 //==========//
 // SETTINGS //
 //==========//

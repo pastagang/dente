@@ -57,14 +57,6 @@ export class StrudelSession {
   }
 
   async init() {
-    // why do we need to await this stuff here? i have no clue
-    // this.core = await import("@strudel/core");
-    // this.mini = await import("@strudel/mini");
-    // this.webaudio = await import("@strudel/webaudio");
-    // this.draw = await import("@strudel/draw");
-    // this.midi = await import("@strudel/midi");
-
-    // NEW IMPORTS: using esm.sh
     // @ts-ignore
     this.core = await import("https://esm.sh/@strudel/core@1.2.0");
     // @ts-ignore
@@ -90,16 +82,12 @@ export class StrudelSession {
       this.midi,
       controls
     );
-    try {
-      await Promise.all([
-        this.loadSamples(),
-        registerSynthSounds(),
-        // registerSoundfonts(),
-      ]);
-      //   this.printSounds();
-    } catch (err) {
-      //   this.onError(err);
-    }
+    await Promise.all([
+      this.loadSamples(),
+      registerSynthSounds(),
+      // registerSoundfonts(),
+    ]);
+
     const getTime = () => {
       const time = getAudioContext().currentTime;
       // console.log(time);
@@ -111,7 +99,7 @@ export class StrudelSession {
       setInterval,
       clearInterval,
     });
-    setTime(() => this.scheduler?.now()); // this is cursed
+    setTime(() => this.scheduler?.now());
 
     this.injectPatternMethods();
     this.initHighlighting();
@@ -176,46 +164,14 @@ export class StrudelSession {
     await this.scheduler?.setPattern(allPatterns, true);
   }
 
-  static noSamplesInjection = `
-	  function sample(a) { throw Error('no samples today'); };
-	  function samples(a) { throw Error('no samples today'); };
-	  function speechda(){ throw Error('no samples today'); };
-	  function hubda(){ throw Error('no samples today'); };
-	  function spagda(){ throw Error('no samples today'); };
-	`;
-
-  // static syncedCpmInjection = ``;
-
-  // TODO: make this apply to all panes, not just the current one
-  // TODO: make this somehow not compete with other flok clients
-  // static syncedCpmInjection = `
-  //   function setCpm(cpm) {
-  //     const f = (120/4/cpm);
-  //     console.log(f)
-  //     all(x=>x.slow(f));
-  //   }
-  //   function setCps(cps) {
-  //     const f = (0.5/cps);
-  //     all(x=>x.slow(f));
-  //   }
-  //   function setcpm(cpm) { setCpm(cpm); }
-  //   function setcps(cps) { setCps(cps); }
-  // `;
-
   async eval(msg, conversational = false) {
     const { body: code, docId } = msg;
 
     let injection = "";
-    // if (window.parent.getWeather().noSamples) {
-    //   injection += StrudelSession.noSamplesInjection;
-    // }
-
-    // injection += StrudelSession.syncedCpmInjection;
     injection += `\nsilence;`;
 
     try {
       !conversational && this.hush();
-      // little hack that injects the docId at the end of the code to make it available in afterEval
       let { pattern, meta, mode } = await evaluate(
         code + injection,
         transpiler
@@ -256,25 +212,15 @@ export class StrudelSession {
       await this.setDocPattern(docId, pattern);
 
       //console.log("afterEval", meta);
-    } catch (err) {
-      console.error(err);
-      //   this.onError(`${err}`, docId);
+    } catch (error) {
+      console.error(error);
+      send({ type: "error", msg: error, docId });
     }
   }
 }
 
-// const { highlightMiniLocations, updateMiniLocations, editorViews } = window.parent;
-// const { getSyncOffset } = window.parent;
-// window.getSyncOffset = getSyncOffset;
-// this is expected to run in an iframe
-// this way, strudel runs in an iframe
-// so it wont mess with the global scope
-// + we can sandbox the evaluation
-// the js here is only for plumbing postMessages
-// + creating the strudel session
-// import { StrudelSession } from '/src/strudel-panel.js';
-function send(type, msg) {
-  window.parent.postMessage({ type, msg });
+function send(stuff) {
+  window.parent.postMessage(stuff);
 }
 
 const strudel = new StrudelSession();
@@ -287,11 +233,9 @@ const strudel = new StrudelSession();
 // window.parent.strudel = strudel;
 // window.parent.strudelWindow = window;
 // window.parent.sounds = () => strudel.printSounds();
-console.log("[strudel] waiting for document click to init");
 window.parent.document.addEventListener("click", async function interaction() {
   window.parent.document.removeEventListener("click", interaction);
   await strudel.initAudio();
-  console.log("[strudel] audio init done");
 });
 
 window.addEventListener("message", (event) => {
