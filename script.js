@@ -38,7 +38,6 @@ window.addEventListener("message", (event) => {
     const editor = currentEditors.get(docId);
     if (!editor) throw new Error("Editor not found");
     const element = editor.element;
-    console.log(element);
     element.setCustomValidity(event.data.msg);
     element.reportValidity();
   }
