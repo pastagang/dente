@@ -61,6 +61,8 @@ function flashEditor(editorId) {
   const editor = currentEditors.get(editorId);
   if (!editor) throw new Error("Editor not found");
   const element = editor.element;
+  element.setCustomValidity("");
+  element.reportValidity();
   element.classList.remove("flash");
   requestAnimationFrame(() => {
     element.classList.add("flash");
