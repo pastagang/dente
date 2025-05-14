@@ -37,9 +37,9 @@ window.addEventListener("message", (event) => {
     const docId = event.data.docId;
     const editor = currentEditors.get(docId);
     if (!editor) throw new Error("Editor not found");
-    const element = editor.element;
-    element.setCustomValidity(event.data.msg);
-    element.reportValidity();
+    const textarea = editor.textarea;
+    textarea.setCustomValidity(event.data.msg);
+    textarea.reportValidity();
   }
 });
 
@@ -59,12 +59,12 @@ const currentEditors = new Map();
 function flashEditor(editorId) {
   const editor = currentEditors.get(editorId);
   if (!editor) throw new Error("Editor not found");
-  const element = editor.element;
-  element.setCustomValidity("");
-  element.reportValidity();
-  element.classList.remove("flash");
+  const textarea = editor.textarea;
+  textarea.setCustomValidity("");
+  textarea.reportValidity();
+  textarea.classList.remove("flash");
   requestAnimationFrame(() => {
-    element.classList.add("flash");
+    textarea.classList.add("flash");
   });
 }
 
@@ -92,7 +92,7 @@ function deleteEditor(editorId) {
   if (!editor) throw new Error("Editor not found");
 
   session._yText(editorId).unobserve(editor.observer);
-  editor.element.remove();
+  editor.section.remove();
   currentEditors.delete(editorId);
 }
 
@@ -106,36 +106,34 @@ function createEditor(flokDoc) {
   const yText = session._yText(flokDoc.id);
 
   //===== Element =====
-  const container = document.createElement("section");
+  const section = document.createElement("section");
   const targetText = document.createElement("label");
   targetText.setAttribute("for", `editor-${flokDoc.id}`);
   targetText.textContent = flokDoc.target;
-  container.append(targetText);
-  const element = document.createElement("textarea");
-  element.id = `editor-${flokDoc.id}`;
-  element.className = "editor";
-  element.style.whiteSpace = "pre";
-  element.value = flokDoc.getText();
-  element.style.resize = "none";
-  element.setAttribute("spellcheck", "false");
-  container.append(element);
+  section.append(targetText);
+  const textarea = document.createElement("textarea");
+  textarea.id = `editor-${flokDoc.id}`;
+  textarea.className = "editor";
+  textarea.style.whiteSpace = "pre";
+  textarea.value = flokDoc.getText();
+  textarea.style.resize = "none";
+  textarea.setAttribute("spellcheck", "false");
+  section.append(textarea);
 
   const main = document.querySelector("main");
   if (!main) throw new Error("Main element not found");
-  main.append(container);
+  main.append(section);
 
-  element.addEventListener(
+  textarea.addEventListener(
     "beforeinput",
     (_e) => {
       /** @type {InputEvent} */
       // @ts-ignore
       const e = _e;
 
-      const start = Math.min(element.selectionStart, element.selectionEnd);
-      const end = Math.max(element.selectionStart, element.selectionEnd);
+      const start = Math.min(textarea.selectionStart, textarea.selectionEnd);
+      const end = Math.max(textarea.selectionStart, textarea.selectionEnd);
       const length = end - start;
-
-      // console.log(e.inputType, start, end, length);
 
       switch (e.inputType) {
         case "insertText":
@@ -230,7 +228,7 @@ function createEditor(flokDoc) {
     { passive: false }
   );
 
-  element.addEventListener("keydown", (event) => {
+  textarea.addEventListener("keydown", (event) => {
     if (
       event.key === "Enter" &&
       (event.ctrlKey || event.metaKey || event.altKey)
@@ -239,10 +237,10 @@ function createEditor(flokDoc) {
       session.evaluate(
         flokDoc.id,
         flokDoc.target,
-        element.value,
+        textarea.value,
         {
           from: 0,
-          to: element.value.length,
+          to: textarea.value.length,
         },
         "web"
       );
@@ -275,8 +273,11 @@ function createEditor(flokDoc) {
     }
 
     // Figure out where the new selection should go
-    let selectionStart = Math.min(element.selectionStart, element.selectionEnd);
-    let selectionEnd = Math.max(element.selectionStart, element.selectionEnd);
+    let selectionStart = Math.min(
+      textarea.selectionStart,
+      textarea.selectionEnd
+    );
+    let selectionEnd = Math.max(textarea.selectionStart, textarea.selectionEnd);
     const backwards = selectionStart > selectionEnd;
 
     if (selectionStart > retainCount) {
@@ -289,18 +290,19 @@ function createEditor(flokDoc) {
     }
 
     // Update the editor
-    element.value = flokDoc.getText();
+    textarea.value = flokDoc.getText();
     if (backwards) {
-      element.setSelectionRange(selectionEnd, selectionStart);
+      textarea.setSelectionRange(selectionEnd, selectionStart);
     } else {
-      element.setSelectionRange(selectionStart, selectionEnd);
+      textarea.setSelectionRange(selectionStart, selectionEnd);
     }
   }
 
   session._yText(flokDoc.id).observe(observer);
 
   const editor = {
-    element,
+    section,
+    textarea,
     observer,
     flokDoc,
   };
