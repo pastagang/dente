@@ -26,7 +26,7 @@ session.on("eval:hydra", (msg) => {
 //===============//
 /** @type {HTMLIFrameElement | null} */
 const strudelIframe = document.querySelector("#strudel");
-if (!strudelIframe) throw new Error("Strudel iframe not found");
+if (!strudelIframe) throw pleaseTellPastagang("Strudel iframe not found");
 
 session.on("eval:strudel", (msg) => {
   strudelIframe.contentWindow?.postMessage({ type: "eval", msg });
@@ -36,7 +36,7 @@ window.addEventListener("message", (event) => {
   if (event.data.type === "error") {
     const docId = event.data.docId;
     const editor = currentEditors.get(docId);
-    if (!editor) throw new Error("Editor not found");
+    if (!editor) throw pleaseTellPastagang("Editor not found");
     const textarea = editor.textarea;
     textarea.setCustomValidity(event.data.msg);
     textarea.reportValidity();
@@ -58,7 +58,7 @@ const currentEditors = new Map();
  */
 function flashEditor(editorId) {
   const editor = currentEditors.get(editorId);
-  if (!editor) throw new Error("Editor not found");
+  if (!editor) throw pleaseTellPastagang("Editor not found");
   const textarea = editor.textarea;
   textarea.setCustomValidity("");
   textarea.reportValidity();
@@ -89,7 +89,7 @@ function updateEditors(flokDocs) {
  */
 function deleteEditor(editorId) {
   const editor = currentEditors.get(editorId);
-  if (!editor) throw new Error("Editor not found");
+  if (!editor) throw pleaseTellPastagang("Editor not found");
 
   session._yText(editorId).unobserve(editor.observer);
   editor.section.remove();
@@ -101,7 +101,7 @@ function deleteEditor(editorId) {
  */
 function createEditor(flokDoc) {
   const currentEditor = currentEditors.get(flokDoc.id);
-  if (currentEditor) throw new Error("Editor already exists");
+  if (currentEditor) throw pleaseTellPastagang("Editor already exists");
 
   const yText = session._yText(flokDoc.id);
 
@@ -121,7 +121,7 @@ function createEditor(flokDoc) {
   section.append(textarea);
 
   const main = document.querySelector("main");
-  if (!main) throw new Error("Main element not found");
+  if (!main) throw pleaseTellPastagang("Main element not found");
   main.append(section);
 
   textarea.addEventListener(
@@ -216,12 +216,7 @@ function createEditor(flokDoc) {
         }
         default: {
           e.preventDefault();
-          alert(
-            "Unrecognized input type: " +
-              e.inputType +
-              "\n Please tell #pastagang you saw this message!"
-          );
-          throw new Error("Unimplemented input type: " + e.inputType);
+          throw pleaseTellPastagang("Unimplemented input type: " + e.inputType);
         }
       }
     },
@@ -259,15 +254,15 @@ function createEditor(flokDoc) {
     let deleteCount = 0;
     for (const operation of changes.delta) {
       if (operation.retain) {
-        if (retainCount) throw new Error("Unexpected double retain");
+        if (retainCount) throw pleaseTellPastagang("Unexpected double retain");
         retainCount += operation.retain;
       }
       if (operation.insert) {
-        if (insertCount) throw new Error("Unexpected double insert");
+        if (insertCount) throw pleaseTellPastagang("Unexpected double insert");
         insertCount += operation.insert.length;
       }
       if (operation.delete) {
-        if (deleteCount) throw new Error("Unexpected double delete");
+        if (deleteCount) throw pleaseTellPastagang("Unexpected double delete");
         deleteCount += operation.delete;
       }
     }
@@ -309,6 +304,13 @@ function createEditor(flokDoc) {
 
   currentEditors.set(flokDoc.id, editor);
   return editor;
+}
+
+function pleaseTellPastagang(_message) {
+  const message =
+    "Please tell #pastagang you saw this error message:\n\n" + _message;
+  alert(message);
+  return Error(message);
 }
 
 session.initialize();
