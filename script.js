@@ -1,10 +1,12 @@
 // @ts-ignore
 import { Session } from "https://esm.sh/@flok-editor/session@1.3.0";
+// @ts-ignore
+import { PASTAGANG_ROOM_NAME } from "https://www.pastagang.cc/pastagang.js";
 
 //============//
 // SETUP FLOK //
 //============//
-const session = new Session("pastagang5", {
+const session = new Session(PASTAGANG_ROOM_NAME, {
   hostname: "flok.cc",
   isSecure: true,
 });
@@ -252,6 +254,7 @@ function createEditor(flokDoc) {
     let retainCount = 0;
     let insertCount = 0;
     let deleteCount = 0;
+    console.log(changes);
     for (const operation of changes.delta) {
       if (operation.retain) {
         if (retainCount) throw pleaseTellPastagang("Unexpected double retain");
