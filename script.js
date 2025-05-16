@@ -2,13 +2,16 @@
 import { Session } from "https://esm.sh/@flok-editor/session@1.3.0";
 // @ts-ignore
 import { PASTAGANG_ROOM_NAME } from "https://www.pastagang.cc/pastagang.js";
+// @ts-ignore
+import { createRelativePositionFromJSON } from "https://esm.sh/yjs@13.5.0";
 
 //================//
 // ERROR HANDLING //
 //================//
-function pleaseTellPastagang(_message) {
+function pleaseTellPastagang(_message, info) {
   const message = `Please tell #pastagang you saw this error message:\n\n${_message}`;
   alert(message);
+  console.log(info);
   return Error(message);
 }
 
@@ -24,6 +27,9 @@ session.on("eval", (msg) => flashEditor(msg.docId));
 session.on("eval:js", (msg) => new Function(msg.body)());
 session.on("change", (flokDocs) => updateEditors(flokDocs));
 session.initialize();
+
+const awareness = session.awareness;
+session.user = "ghost";
 
 //=============//
 // SETUP HYDRA //
@@ -156,6 +162,29 @@ function createEditor(flokDoc) {
         "web"
       );
     }
+  });
+
+  //===== Caret =====
+  textarea.addEventListener("selectionchange", () => {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    awareness.setLocalStateField("cursor", {
+      hiddenCaret: false,
+      anchor: {
+        type: null,
+        tname: `text:${flokDoc.id}`,
+        assoc: 0,
+        item: null,
+        character: start,
+      },
+      head: {
+        type: null,
+        tname: `text:${flokDoc.id}`,
+        assoc: 0,
+        item: null,
+        character: end,
+      },
+    });
   });
 
   //===== Observer =====
@@ -305,11 +334,19 @@ function getObserver({ textarea, flokDoc }) {
         retainCount += operation.retain;
       }
       if (operation.insert) {
-        if (insertCount) throw pleaseTellPastagang("Unexpected double insert");
+        if (insertCount)
+          throw pleaseTellPastagang(
+            "Unexpected double insert",
+            textEvent.changes
+          );
         insertCount += operation.insert.length;
       }
       if (operation.delete) {
-        if (deleteCount) throw pleaseTellPastagang("Unexpected double delete");
+        if (deleteCount)
+          throw pleaseTellPastagang(
+            "Unexpected double delete",
+            textEvent.changes
+          );
         deleteCount += operation.delete;
       }
     }
