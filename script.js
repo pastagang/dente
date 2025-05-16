@@ -249,15 +249,25 @@ function createEditor(flokDoc) {
     // Ignore local changes
     if (!transaction.origin) return;
 
-    // Figure out what the changes do
-    const changes = textEvent.changes;
+    // Get the starting selection
+    let selectionStart = Math.min(
+      textarea.selectionStart,
+      textarea.selectionEnd
+    );
+    let selectionEnd = Math.max(textarea.selectionStart, textarea.selectionEnd);
+    const isSelectionBackwards = selectionStart > selectionEnd;
+
+    // Process the changes
     let retainCount = 0;
     let insertCount = 0;
     let deleteCount = 0;
-    console.log(changes);
-    for (const operation of changes.delta) {
+    for (const operation of textEvent.changes.delta) {
       if (operation.retain) {
-        if (retainCount) throw pleaseTellPastagang("Unexpected double retain");
+        // If we're moving the caret and there's a pending operation,
+        // it means we're finished with the pending one, so apply it.
+        if (retainCount && isOperationStarted()) {
+          applyOperation();
+        }
         retainCount += operation.retain;
       }
       if (operation.insert) {
@@ -270,29 +280,40 @@ function createEditor(flokDoc) {
       }
     }
 
-    // Figure out where the new selection should go
-    let selectionStart = Math.min(
-      textarea.selectionStart,
-      textarea.selectionEnd
-    );
-    let selectionEnd = Math.max(textarea.selectionStart, textarea.selectionEnd);
-    const backwards = selectionStart > selectionEnd;
+    // Apply any pending operations
+    if (isOperationStarted()) applyOperation();
 
-    if (selectionStart > retainCount) {
-      selectionStart = Math.max(selectionStart - deleteCount, retainCount);
-      selectionStart += insertCount;
-    }
-    if (selectionEnd > retainCount) {
-      selectionEnd = Math.max(selectionEnd - deleteCount, retainCount);
-      selectionEnd += insertCount;
+    function isOperationStarted() {
+      return retainCount > 0 || insertCount > 0 || deleteCount > 0;
     }
 
-    // Update the editor
-    textarea.value = flokDoc.getText();
-    if (backwards) {
-      textarea.setSelectionRange(selectionEnd, selectionStart);
-    } else {
-      textarea.setSelectionRange(selectionStart, selectionEnd);
+    function resetOperation() {
+      retainCount = 0;
+      insertCount = 0;
+      deleteCount = 0;
+    }
+
+    function applyOperation() {
+      // Find out the new selection
+      if (selectionStart > retainCount) {
+        selectionStart = Math.max(selectionStart - deleteCount, retainCount);
+        selectionStart += insertCount;
+      }
+      if (selectionEnd > retainCount) {
+        selectionEnd = Math.max(selectionEnd - deleteCount, retainCount);
+        selectionEnd += insertCount;
+      }
+
+      // Update the editor
+      textarea.value = flokDoc.getText();
+      if (isSelectionBackwards) {
+        textarea.setSelectionRange(selectionEnd, selectionStart);
+      } else {
+        textarea.setSelectionRange(selectionStart, selectionEnd);
+      }
+
+      // Reset the operation buffer
+      resetOperation();
     }
   }
 
