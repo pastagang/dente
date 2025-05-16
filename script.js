@@ -3,6 +3,15 @@ import { Session } from "https://esm.sh/@flok-editor/session@1.3.0";
 // @ts-ignore
 import { PASTAGANG_ROOM_NAME } from "https://www.pastagang.cc/pastagang.js";
 
+//================//
+// ERROR HANDLING //
+//================//
+function pleaseTellPastagang(_message) {
+  const message = `Please tell #pastagang you saw this error message:\n\n${_message}`;
+  alert(message);
+  return Error(message);
+}
+
 //============//
 // SETUP FLOK //
 //============//
@@ -12,8 +21,9 @@ const session = new Session(PASTAGANG_ROOM_NAME, {
 });
 
 session.on("eval", (msg) => flashEditor(msg.docId));
-session.on("change", (flokDocs) => updateEditors(flokDocs));
 session.on("eval:js", (msg) => new Function(msg.body)());
+session.on("change", (flokDocs) => updateEditors(flokDocs));
+session.initialize();
 
 //=============//
 // SETUP HYDRA //
@@ -126,105 +136,9 @@ function createEditor(flokDoc) {
   if (!main) throw pleaseTellPastagang("Main element not found");
   main.append(section);
 
-  textarea.addEventListener(
-    "beforeinput",
-    (_e) => {
-      /** @type {InputEvent} */
-      // @ts-ignore
-      const e = _e;
-
-      const start = Math.min(textarea.selectionStart, textarea.selectionEnd);
-      const end = Math.max(textarea.selectionStart, textarea.selectionEnd);
-      const length = end - start;
-
-      switch (e.inputType) {
-        case "insertText":
-        case "insertCompositionText": {
-          if (!pastingMode) {
-            yText.delete(start, length);
-            yText.insert(start, e.data);
-          } else {
-            e.preventDefault();
-            const answer = confirm(
-              "Typing is disabled. Do you want to enable typing?"
-            );
-            if (answer) {
-              pastingMode = false;
-              localStorage.setItem("pastingMode", "false");
-            }
-          }
-          break;
-        }
-        case "deleteContent": {
-          yText.delete(start, length);
-          break;
-        }
-        case "deleteWordBackward":
-        case "deleteContentBackward": {
-          if (length) {
-            yText.delete(start, length);
-          } else {
-            yText.delete(start - 1, 1);
-          }
-          break;
-        }
-        case "deleteWordForward":
-        case "deleteContentForward": {
-          if (length) {
-            yText.delete(start, length);
-          } else {
-            yText.delete(start, 1);
-          }
-          break;
-        }
-        case "deleteByCut": {
-          yText.delete(start, length);
-          break;
-        }
-        case "insertFromPaste": {
-          if (!pastingMode) {
-            e.preventDefault();
-            const answer = confirm(
-              "Pasting is disabled. Do you want to enable pasting?"
-            );
-            if (answer) {
-              pastingMode = true;
-              localStorage.setItem("pastingMode", "true");
-            }
-          } else {
-            yText.delete(start, length);
-            yText.insert(start, e.data);
-          }
-          break;
-        }
-        case "insertLineBreak":
-        case "insertParagraph": {
-          yText.delete(start, length);
-          yText.insert(start, "\n");
-          break;
-        }
-        case "historyUndo":
-        case "historyRedo": {
-          e.preventDefault();
-          alert("Undo is disabled.");
-          break;
-        }
-
-        case "insertByDrop":
-        case "deleteByDrag": {
-          console.error("Dragging and dropping is disabled.");
-          e.preventDefault();
-          break;
-        }
-        default: {
-          e.preventDefault();
-          throw pleaseTellPastagang("Unimplemented input type: " + e.inputType);
-        }
-      }
-    },
-    { passive: false }
-  );
-
+  //===== Input =====
+  const inputHandler = getInputHandler({ textarea, yText });
+  textarea.addEventListener("beforeinput", inputHandler, { passive: false });
   textarea.addEventListener("keydown", (event) => {
     if (
       event.key === "Enter" &&
@@ -245,7 +159,127 @@ function createEditor(flokDoc) {
   });
 
   //===== Observer =====
-  function observer(textEvent, transaction) {
+  const observer = getObserver({ textarea, flokDoc });
+  session._yText(flokDoc.id).observe(observer);
+
+  //===== Collecting it all up! =====
+  const editor = {
+    section,
+    textarea,
+    observer,
+    flokDoc,
+  };
+  currentEditors.set(flokDoc.id, editor);
+  return editor;
+}
+
+//===============//
+// INPUT HANDLER //
+//===============//
+function getInputHandler({ textarea, yText }) {
+  return function inputHandler(_e) {
+    /** @type {InputEvent} */
+    // @ts-ignore
+    const e = _e;
+
+    const start = Math.min(textarea.selectionStart, textarea.selectionEnd);
+    const end = Math.max(textarea.selectionStart, textarea.selectionEnd);
+    const length = end - start;
+
+    switch (e.inputType) {
+      case "insertText":
+      case "insertCompositionText": {
+        if (!pastingMode) {
+          yText.delete(start, length);
+          yText.insert(start, e.data);
+        } else {
+          e.preventDefault();
+          const answer = confirm(
+            "Typing is disabled. Do you want to enable typing?"
+          );
+          if (answer) {
+            pastingMode = false;
+            localStorage.setItem("pastingMode", "false");
+          }
+        }
+        break;
+      }
+      case "deleteContent": {
+        yText.delete(start, length);
+        break;
+      }
+      case "deleteWordBackward":
+      case "deleteContentBackward": {
+        if (length) {
+          yText.delete(start, length);
+        } else {
+          yText.delete(start - 1, 1);
+        }
+        break;
+      }
+      case "deleteWordForward":
+      case "deleteContentForward": {
+        if (length) {
+          yText.delete(start, length);
+        } else {
+          yText.delete(start, 1);
+        }
+        break;
+      }
+      case "deleteByCut": {
+        yText.delete(start, length);
+        break;
+      }
+      case "insertFromPaste": {
+        if (!pastingMode) {
+          e.preventDefault();
+          const answer = confirm(
+            "Pasting is disabled. Do you want to enable pasting?"
+          );
+          if (answer) {
+            pastingMode = true;
+            localStorage.setItem("pastingMode", "true");
+          }
+        } else {
+          yText.delete(start, length);
+          yText.insert(start, e.data);
+        }
+        break;
+      }
+      case "insertLineBreak":
+      case "insertParagraph": {
+        yText.delete(start, length);
+        yText.insert(start, "\n");
+        break;
+      }
+      case "historyUndo":
+      case "historyRedo": {
+        e.preventDefault();
+        alert("Undo is disabled.");
+        break;
+      }
+
+      case "insertByDrop":
+      case "deleteByDrag": {
+        console.error("Dragging and dropping is disabled.");
+        e.preventDefault();
+        break;
+      }
+      default: {
+        e.preventDefault();
+        throw pleaseTellPastagang("Unimplemented input type: " + e.inputType);
+      }
+    }
+  };
+}
+
+//==========//
+// OBSERVER //
+//==========//
+// An observer listens for incoming changes from other people and
+// applies them to the textarea in a (hopefully) graceful way.
+function getObserver({ textarea, flokDoc }) {
+  return function observer(textEvent, transaction) {
     // Ignore local changes
     if (!transaction.origin) return;
 
@@ -315,26 +349,5 @@ function createEditor(flokDoc) {
       // Reset the operation buffer
       resetOperation();
     }
-  }
-
-  session._yText(flokDoc.id).observe(observer);
-
-  const editor = {
-    section,
-    textarea,
-    observer,
-    flokDoc,
   };
-
-  currentEditors.set(flokDoc.id, editor);
-  return editor;
 }
-
-function pleaseTellPastagang(_message) {
-  const message =
-    "Please tell #pastagang you saw this error message:\n\n" + _message;
-  alert(message);
-  return Error(message);
-}
-
-session.initialize();
