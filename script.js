@@ -376,6 +376,9 @@ function getObserver({ textarea, flokDoc }) {
       }
 
       // Update the editor
+      // TODO
+      // BUG: This is setting the value of the textarea to the entire text
+      // But we're only adjusting the selection for ONE operation.
       textarea.value = flokDoc.getText();
       if (isSelectionBackwards) {
         textarea.setSelectionRange(selectionEnd, selectionStart);
