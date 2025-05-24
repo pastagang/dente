@@ -1,7 +1,8 @@
 // @ts-ignore
 import { Session } from "https://esm.sh/@flok-editor/session@1.3.0";
 // @ts-ignore
-import { PASTAGANG_ROOM_NAME } from "https://www.pastagang.cc/pastagang.js";
+// import { PASTAGANG_ROOM_NAME } from "https://www.pastagang.cc/pastagang.js";
+const PASTAGANG_ROOM_NAME = "dente";
 // @ts-ignore
 import { createRelativePositionFromJSON } from "https://esm.sh/yjs@13.5.0";
 
