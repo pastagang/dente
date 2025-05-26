@@ -340,6 +340,8 @@ function getObserver({ textarea, flokDoc }) {
     let retainCount = 0;
     let insertCount = 0;
     let deleteCount = 0;
+
+    let giveUp = false;
     for (const operation of textEvent.changes.delta) {
       if (operation.retain) {
         // If we're moving the caret and there's a pending operation,
@@ -350,19 +352,25 @@ function getObserver({ textarea, flokDoc }) {
         retainCount += operation.retain;
       }
       if (operation.insert) {
-        if (insertCount)
-          throw pleaseTellPastagang(
-            "Unexpected double insert",
-            textEvent.changes
-          );
+        if (insertCount) {
+          // throw pleaseTellPastagang(
+          //   "Unexpected double insert",
+          //   textEvent.changes
+          // );
+          giveUp = true;
+          break;
+        }
         insertCount += operation.insert.length;
       }
       if (operation.delete) {
-        if (deleteCount)
-          throw pleaseTellPastagang(
-            "Unexpected double delete",
-            textEvent.changes
-          );
+        if (deleteCount) {
+          // throw pleaseTellPastagang(
+          //   "Unexpected double delete",
+          //   textEvent.changes
+          // );
+          giveUp = true;
+          break;
+        }
         deleteCount += operation.delete;
       }
     }
@@ -404,6 +412,11 @@ function getObserver({ textarea, flokDoc }) {
 
       // Reset the operation buffer
       resetOperation();
+    }
+
+    if (giveUp) {
+      // Update the editor anyway
+      textarea.value = flokDoc.getText();
     }
   };
 }
