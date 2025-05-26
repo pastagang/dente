@@ -46,7 +46,7 @@ textarea {
     color: white;
   }
   100% {
-    background-color: transparent;
-    color: black;
+    background-color: auto;
+    color: auto;
   }
 }
