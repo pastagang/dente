@@ -126,10 +126,25 @@ function createEditor(flokDoc) {
 
   //===== Element =====
   const section = document.createElement("section");
-  const targetText = document.createElement("label");
-  targetText.setAttribute("for", `editor-${flokDoc.id}`);
-  targetText.textContent = flokDoc.target;
-  section.append(targetText);
+  const targetSelect = document.createElement("select");
+  // targetSelect.setAttribute("for", `editor-${flokDoc.id}`);
+  // targetSelect.textContent = flokDoc.target;
+  const strudelOption = document.createElement("option");
+  const jsOption = document.createElement("option");
+  strudelOption.value = "strudel";
+  strudelOption.textContent = "strudel";
+  jsOption.value = "js";
+  jsOption.textContent = "js";
+  targetSelect.append(strudelOption, jsOption);
+  targetSelect.value = flokDoc.target;
+  targetSelect.addEventListener("change", (event) => {
+    /** @ts-expect-error */
+    const newTarget = event.target.value;
+    if (newTarget === flokDoc.target) return;
+    flokDoc.target = newTarget;
+  });
+
+  section.append(targetSelect);
   const textarea = document.createElement("textarea");
   textarea.id = `editor-${flokDoc.id}`;
   textarea.className = "editor";
