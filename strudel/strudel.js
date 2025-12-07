@@ -11,11 +11,11 @@ import {
   fast,
   Cyclist,
   // @ts-ignore
-} from "https://esm.sh/@strudel/core@1.2.0";
+} from "https://esm.sh/@strudel/core@1.2.5";
 // @ts-ignore
-// import { registerSoundfonts } from "https://esm.sh/@strudel/soundfonts@1.2.1";
+// import { registerSoundfonts } from "https://esm.sh/@strudel/soundfonts@1.2.5";
 // @ts-ignore
-import { transpiler } from "https://esm.sh/@strudel/transpiler@1.2.0";
+import { transpiler } from "https://esm.sh/@strudel/transpiler@1.2.5";
 import {
   aliasBank,
   getAudioContext,
@@ -24,7 +24,7 @@ import {
   samples,
   webaudioOutput,
   // @ts-ignore
-} from "https://esm.sh/@strudel/webaudio@1.2.1";
+} from "https://esm.sh/@strudel/webaudio@1.2.5";
 
 controls.createParam("docId");
 
@@ -58,19 +58,19 @@ export class StrudelSession {
 
   async init() {
     // @ts-ignore
-    this.core = await import("https://esm.sh/@strudel/core@1.2.0");
+    this.core = await import("https://esm.sh/@strudel/core@1.2.5");
     // @ts-ignore
-    this.mini = await import("https://esm.sh/@strudel/mini@1.2.0");
+    this.mini = await import("https://esm.sh/@strudel/mini@1.2.5");
     // @ts-ignore
-    this.webaudio = await import("https://esm.sh/@strudel/webaudio@1.2.1");
+    this.webaudio = await import("https://esm.sh/@strudel/webaudio@1.2.5");
     // @ts-ignore
-    this.draw = await import("https://esm.sh/@strudel/draw@1.2.0");
+    this.draw = await import("https://esm.sh/@strudel/draw@1.2.5");
     // @ts-ignore
-    this.midi = await import("https://esm.sh/@strudel/midi@1.2.0");
+    this.midi = await import("https://esm.sh/@strudel/midi@1.2.5");
     // @ts-ignore
-    this.tonal = import("https://esm.sh/@strudel/tonal@1.2.0");
+    this.tonal = import("https://esm.sh/@strudel/tonal@1.2.5");
     // @ts-ignore
-    // this.soundfonts = import("https://esm.sh/@strudel/soundfonts@1.2.1");
+    // this.soundfonts = import("https://esm.sh/@strudel/soundfonts@1.2.5");
 
     await evalScope(
       this.core,
@@ -168,6 +168,9 @@ export class StrudelSession {
     const { body: code, docId } = msg;
 
     let injection = "";
+    injection += `\nsamples('github:mot4i/garden')`;
+    injection += `\nsamples('github:eddyflux/crate')`;
+    injection += `\nsamples('github:yaxu/clean-breaks')`;
     injection += `\nsilence;`;
 
     try {
